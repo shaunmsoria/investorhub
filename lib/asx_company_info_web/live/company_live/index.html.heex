@@ -1,0 +1,47 @@
+<div class="min-h-screen bg-[#f8f9fa]">
+  <!-- Header -->
+  <header class="bg-white border-b border-[#e9ecef] py-8">
+    <div class="max-w-screen-xl mx-auto px-4 text-center">
+      <h1 class="text-3xl font-bold text-[#212529] mb-2">
+        ASX Company Information
+      </h1>
+      <p class="text-[#6c757d]">
+        Search for Australian Stock Exchange listed companies
+      </p>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-screen-xl mx-auto px-4 py-8">
+    <%= if @company_data && @quote_data do %>
+      <!-- Two Column Layout (After Search) -->
+      <div class="grid grid-cols-1 lg:grid-cols-[minmax(350px,450px)_1fr] gap-6">
+        <!-- Left Column -->
+        <div class="space-y-6">
+          <.search_form form={@form} current_ticker={@current_ticker} />
+          <.key_statistics quote={@quote_data} />
+        </div>
+
+        <!-- Right Column -->
+        <div>
+          <.company_info company={@company_data} />
+        </div>
+      </div>
+    <% else %>
+      <!-- Centered Search (Initial State) -->
+      <div class="flex flex-col items-center justify-center min-h-[60vh]">
+        <.search_form form={@form} current_ticker={@current_ticker} centered={true} />
+      </div>
+    <% end %>
+
+    <!-- Loading State -->
+    <%= if @loading do %>
+      <.loading_spinner />
+    <% end %>
+
+    <!-- Error State -->
+    <%= if @error do %>
+      <.error_message message={@error} />
+    <% end %>
+  </main>
+</div>
