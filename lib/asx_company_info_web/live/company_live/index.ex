@@ -14,6 +14,8 @@ defmodule AsxCompanyInfoWeb.CompanyLive.Index do
      |> assign(:current_ticker, "")
      |> assign(:selected_info_ticker, nil)
      |> assign(:screen_width, nil)
+     |> assign(:favourite_tickers, [])
+     |> assign(:open_dropdown_ticker, nil)
      |> assign(:form, to_form(%{"ticker" => ""}))}
   end
 
@@ -91,7 +93,8 @@ defmodule AsxCompanyInfoWeb.CompanyLive.Index do
      socket
      |> assign(:comparison_tickers, comparison_tickers)
      |> assign(:comparison_data, comparison_data)
-     |> assign(:selected_info_ticker, selected_info_ticker)}
+     |> assign(:selected_info_ticker, selected_info_ticker)
+     |> assign(:open_dropdown_ticker, nil)}
   end
 
   @impl true
@@ -102,6 +105,45 @@ defmodule AsxCompanyInfoWeb.CompanyLive.Index do
   @impl true
   def handle_event("update_screen_width", %{"width" => width}, socket) do
     {:noreply, assign(socket, :screen_width, width)}
+  end
+
+  @impl true
+  def handle_event("toggle_dropdown", %{"ticker" => ticker}, socket) do
+    new_dropdown = if socket.assigns.open_dropdown_ticker == ticker, do: nil, else: ticker
+    {:noreply, assign(socket, :open_dropdown_ticker, new_dropdown)}
+  end
+
+  @impl true
+  def handle_event("close_dropdown", _params, socket) do
+    {:noreply, assign(socket, :open_dropdown_ticker, nil)}
+  end
+
+  @impl true
+  def handle_event("toggle_favourite", %{"ticker" => ticker}, socket) do
+    # Don't allow popular stocks to be favorited
+    if ticker in ["CBA", "NAB", "BHP"] do
+      {:noreply, socket}
+    else
+      favourite_tickers = socket.assigns.favourite_tickers
+
+      new_favourites =
+        if ticker in favourite_tickers do
+          # Remove from favourites
+          Enum.reject(favourite_tickers, &(&1 == ticker))
+        else
+          # Add to favourites if less than 3
+          if length(favourite_tickers) < 3 do
+            favourite_tickers ++ [ticker]
+          else
+            favourite_tickers
+          end
+        end
+
+      {:noreply,
+       socket
+       |> assign(:favourite_tickers, new_favourites)
+       |> assign(:open_dropdown_ticker, nil)}
+    end
   end
 
   @impl true
@@ -264,21 +306,46 @@ defmodule AsxCompanyInfoWeb.CompanyLive.Index do
           </div>
         </div>
 
-        <!-- Popular Stocks -->
-        <div>
-          <p class="text-sm text-[#6c757d] mb-2">Popular stocks:</p>
-          <div class="flex gap-2">
-            <%= for ticker <- ["CBA", "NAB", "BHP"] do %>
-              <button
-                type="button"
-                phx-click="select_popular"
-                phx-value-ticker={ticker}
-                class="px-4 py-1.5 border border-[#e9ecef] rounded-md text-sm font-medium text-[#212529] hover:bg-[#f8f9fa] transition-colors"
-              >
-                <%= ticker %>
-              </button>
-            <% end %>
+        <!-- Popular and Favourite Stocks -->
+        <div class={[
+          "flex gap-4",
+          Map.get(assigns, :centered) && "flex-col" || "flex-col sm:flex-row"
+        ]}>
+          <!-- Popular Stocks -->
+          <div class="flex-1">
+            <p class="text-sm text-[#6c757d] mb-2">Popular stocks:</p>
+            <div class="flex gap-2">
+              <%= for ticker <- ["CBA", "NAB", "BHP"] do %>
+                <button
+                  type="button"
+                  phx-click="select_popular"
+                  phx-value-ticker={ticker}
+                  class="px-4 py-1.5 border border-[#e9ecef] rounded-md text-sm font-medium text-[#212529] hover:bg-[#f8f9fa] transition-colors"
+                >
+                  <%= ticker %>
+                </button>
+              <% end %>
+            </div>
           </div>
+
+          <!-- Favourite Stocks -->
+          <%= if length(@favourite_tickers) > 0 do %>
+            <div class="flex-1">
+              <p class="text-sm text-[#6c757d] mb-2">Favourite stocks:</p>
+              <div class="flex gap-2">
+                <%= for ticker <- @favourite_tickers do %>
+                  <button
+                    type="button"
+                    phx-click="select_popular"
+                    phx-value-ticker={ticker}
+                    class="px-4 py-1.5 border border-[#e9ecef] rounded-md text-sm font-medium text-[#212529] hover:bg-[#f8f9fa] transition-colors"
+                  >
+                    <%= ticker %>
+                  </button>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
         </div>
       </div>
     </.form>
@@ -297,9 +364,15 @@ defmodule AsxCompanyInfoWeb.CompanyLive.Index do
             {ticker, pct}
           end)
 
-        best = ticker_pcts |> Enum.max_by(fn {_ticker, pct} -> pct end, fn -> {nil, 0} end) |> elem(0)
-        worst = ticker_pcts |> Enum.min_by(fn {_ticker, pct} -> pct end, fn -> {nil, 0} end) |> elem(0)
-        {best, worst}
+        best = ticker_pcts |> Enum.max_by(fn {_ticker, pct} -> pct end, fn -> {nil, 0} end)
+        worst = ticker_pcts |> Enum.min_by(fn {_ticker, pct} -> pct end, fn -> {nil, 0} end)
+
+        # Only mark best/worst if they're different (i.e., not all tickers have same pctchng)
+        if best != worst do
+          {elem(best, 0), elem(worst, 0)}
+        else
+          {nil, nil}
+        end
       else
         {nil, nil}
       end
@@ -333,6 +406,54 @@ defmodule AsxCompanyInfoWeb.CompanyLive.Index do
                   end
                 }
               ><%= ticker %></span>
+              <%= if ticker not in ["CBA", "NAB", "BHP"] do %>
+                <div class="relative">
+                  <button
+                    type="button"
+                    phx-click="toggle_dropdown"
+                    phx-value-ticker={ticker}
+                    class="text-[#6c757d] hover:text-[#212529] hover:bg-[#f8f9fa] rounded-full p-1 transition-colors"
+                    title="More actions"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 12.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 18.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z" />
+                    </svg>
+                  </button>
+                  <%= if @open_dropdown_ticker == ticker do %>
+                    <div class="absolute right-0 top-full mt-1 bg-white border border-[#e9ecef] rounded-lg shadow-lg py-1 z-10 min-w-[160px]" phx-click-away="close_dropdown">
+                      <button
+                        type="button"
+                        phx-click="toggle_favourite"
+                        phx-value-ticker={ticker}
+                        class="w-full px-4 py-2 text-left text-sm hover:bg-[#f8f9fa] transition-colors flex items-center gap-2"
+                      >
+                        <%= if ticker in @favourite_tickers do %>
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-4 text-[#ffc107]">
+                            <path fill-rule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z" clip-rule="evenodd" />
+                          </svg>
+                          <span class="text-[#212529]">unfavourite</span>
+                        <% else %>
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 text-[#6c757d]">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
+                          </svg>
+                          <span class="text-[#212529]">favourite</span>
+                        <% end %>
+                      </button>
+                      <button
+                        type="button"
+                        phx-click="remove_ticker"
+                        phx-value-ticker={ticker}
+                        class="w-full px-4 py-2 text-left text-sm hover:bg-[#f8f9fa] transition-colors flex items-center gap-2"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 text-[#dc3545]">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                        </svg>
+                        <span class="text-[#dc3545]">Remove</span>
+                      </button>
+                    </div>
+                  <% end %>
+                </div>
+              <% else %>
                 <button
                   type="button"
                   phx-click="remove_ticker"
@@ -343,6 +464,7 @@ defmodule AsxCompanyInfoWeb.CompanyLive.Index do
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 12H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                   </svg>
                 </button>
+              <% end %>
             </div>
           </div>
         <% end %>

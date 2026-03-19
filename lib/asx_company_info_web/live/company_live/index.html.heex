@@ -17,8 +17,8 @@
     <%= if length(@comparison_tickers) > 0 do %>
       <!-- Single Column Layout -->
       <div class="space-y-6 max-w-screen-lg mx-auto">
-        <.search_form form={@form} current_ticker={@current_ticker} />
-        <.key_statistics comparison_tickers={@comparison_tickers} comparison_data={@comparison_data} />
+        <.search_form form={@form} current_ticker={@current_ticker} favourite_tickers={@favourite_tickers} />
+        <.key_statistics comparison_tickers={@comparison_tickers} comparison_data={@comparison_data} favourite_tickers={@favourite_tickers} open_dropdown_ticker={@open_dropdown_ticker} />
         
         <% selected_company = if @selected_info_ticker, do: @comparison_data[@selected_info_ticker][:company], else: nil %>
         <.company_info 
@@ -30,7 +30,7 @@
     <% else %>
       <!-- Centered Search (Initial State) -->
       <div class="flex flex-col items-center justify-center min-h-[60vh]">
-        <.search_form form={@form} current_ticker={@current_ticker} centered={true} />
+        <.search_form form={@form} current_ticker={@current_ticker} favourite_tickers={@favourite_tickers} centered={true} />
       </div>
     <% end %>
 
