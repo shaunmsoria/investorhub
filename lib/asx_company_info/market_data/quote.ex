@@ -10,6 +10,7 @@ defmodule AsxCompanyInfo.MarketData.Quote do
     :pctchng,           # Percentage change
     :cf_volume,         # Volume
     :mkt_value,         # Market value
-    :"52wk_high"        # 52 week high
+    :"52wk_high",        # 52 week high
+    :"52wk_low",        # 52 week low
   ]
 end

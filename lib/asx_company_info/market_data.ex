@@ -49,6 +49,9 @@ defmodule AsxCompanyInfo.MarketData do
       {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
         case Jason.decode(body) do
           {:ok, data} ->
+
+            data |> IO.inspect(label: "mx1 data in fetch_quote")
+
             quote_data = data["quote"] || %{}
             {:ok, %Quote{
               symbol: data["symbol"],
@@ -57,7 +60,8 @@ defmodule AsxCompanyInfo.MarketData do
               pctchng: quote_data["pctchng"],
               cf_volume: quote_data["cf_volume"],
               mkt_value: quote_data["mkt_value"],
-              "52wk_high": quote_data["52wk_high"]
+              "52wk_high": quote_data["52wk_high"],
+              "52wk_low": quote_data["52wk_low"],
             }}
           {:error, _} ->
             {:error, :invalid_json}
