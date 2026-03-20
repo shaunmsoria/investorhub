@@ -129,6 +129,10 @@ Users shouldn't need to read a blob of text to make comparisons; the company inf
 
 * If users request more stocks to be added, we can expand the max limit from 3 to 5 or more. If users request the possibility to save multiple stock selections, it can be considered in the future, but before investing time in that feature, I think we can use the `Favourite Stocks` section to see if there is demand and assess from there.
 
+### Test:
+
+* To test this feature I used the ticker `ADC` but you can use any ASX ticker for which the search query will return the company info and quote data.
+
 
         
 # Additional Features:
