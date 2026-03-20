@@ -50,8 +50,6 @@ defmodule AsxCompanyInfo.MarketData do
         case Jason.decode(body) do
           {:ok, data} ->
 
-            data |> IO.inspect(label: "mx1 data in fetch_quote")
-
             quote_data = data["quote"] || %{}
             {:ok, %Quote{
               symbol: data["symbol"],
