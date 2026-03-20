@@ -6,7 +6,7 @@
 
 I made the following assumptions:
 
-1) Since the user isn't logged in to the app in its current version, the favourites are saved in a variable. In production with an identified user and database, I would store the user's favourite stocks either in the user's table or in a dedicated table in the database
+1) Since the user isn't logged in to the app in its current version, the favourites are saved in a variable. In production with an identified user and database, I would store the user's favourite stocks either in the user's table or in a dedicated table in the database.
 
 2) Since the app will be running on a local machine with ASDF using the GitHub link, the installation process below shouldn't cause any issues.
 
@@ -27,7 +27,7 @@ After analysing the business case, the following problems were identified as cor
 * Inability for the user to save favourites or name a selection for reuse
 
 
-## Inability to effectively compare multiple stocks at once.
+## Inability to effectively compare multiple stocks at once
 
 ### Source: 
 
@@ -43,14 +43,13 @@ After analysing the business case, the following problems were identified as cor
 
 ### Reasoning:
 
-* Based on User Survey, Pain Points and User Behavior Analysis it's clear our current users need to spot potential trading opportunities by comparing multiple stocks at once.
-Easing the process will allow the user to focus more resources on finding profitable opportunities than having to overcome bad UI/UX.
+* Based on User Survey, Pain Points, and User Behavior Analysis, it's clear our current users need to spot potential trading opportunities by comparing multiple stocks at once. Easing the process will allow the user to focus more resources on finding profitable opportunities rather than having to overcome bad UI/UX.
 
 ### Solution:
 
-* Implement a side by side comparison allowing the user to compare up to 4 stocks at once on desktop (adjusted based on the screen resolution, 2 stocks at once for mobile and 3 stocks at once on tablets).
+* Implement a side-by-side comparison allowing the user to compare up to 4 stocks at once on desktop (adjusted based on screen resolution: 2 stocks at once for mobile and 3 stocks at once on tablets).
 
-* The data displayed needs to be Key statistics focused as it was revealed in the "User Behavior Analysis" that users want to compare metrics and having smart comparison tools to help them decipher potential trends.
+* The data displayed needs to be focused on key statistics, as it was revealed in the "User Behavior Analysis" that users want to compare metrics and have smart comparison tools to help them decipher potential trends.
 
 * The Key Statistics displayed are:
     * Ticker: (Stock Ticker) 
@@ -65,7 +64,7 @@ Easing the process will allow the user to focus more resources on finding profit
     * Change Difference: Represents the difference in percentage between the delta percentage of the stock vs the stock on the right side 
         -> Helps users compare the stock volatility
 
-    * Trend Indicator: Allows the user to identify the stock trend versus its 52W low and 52W high
+    * Trend Indicator: Allows users to identify the stock trend versus its 52W low and 52W high
         -> Helps users evaluate the stock's room for growth or correction
 
     * 52W High: The highest price the stock reached in the last 52 weeks
@@ -98,13 +97,13 @@ Users shouldn't need to read a blob of text to make comparisons; the company inf
 
 * I also added a remove button next to the ticker's name to allow flexibility on the stock selection.
 
-* I also decided to limit the mobile version ticker selection range to 2 and tablets to 3 to not have the key metrics crammed and being easily readable. The limited selection range on mobile and tablets is compensated by the interface's quick selection capabilities. 
+* I also decided to limit the mobile version ticker selection range to 2 and tablets to 3 to keep the key metrics from being crammed and ensure they're easily readable. The limited selection range on mobile and tablets is compensated by the interface's quick selection capabilities. 
 
 * I also decided not to implement live updates as it's not mentioned in any of the case study data sources (e.g. Pain Points Identified, Current User Behavior Analysis...), and therefore concluded it's not part of the core problem to solve for the users.
 
 
 
-## Inability for the user to save favourites or name a selection for reuse.
+## Inability for the user to save favourites or name a selection for reuse
 
 ### Source: 
 
@@ -114,30 +113,31 @@ Users shouldn't need to read a blob of text to make comparisons; the company inf
 
 ### Reasoning:
 
-* Based on Pain Points and User Behavior Analysis it appears that users can have a particular selection of tickers they would like to check on a regular basis and reducing the UX friction will entice the user to come back to us to use our comparison tools.
+* Based on Pain Points and User Behavior Analysis, it appears that users can have a particular selection of tickers they would like to check on a regular basis, and reducing the UX friction will entice users to come back to us to use our comparison tools.
 
 ### Solution:
 
-* Implemented a favourite functionality allowing the user to access the metrics of their favourite stocks with one click of a button
-* For stocks that are not popular stocks in our interface, a three vertical dot button will appear instead of the remove button next to the Ticker in the Key Statistics, allowing the user to either remove the ticker from the selection or add/remove the stock in the `Favourite stocks` section.
+* Implemented a favourite functionality allowing users to access the metrics of their favourite stocks with one click of a button
+* For stocks that are not popular stocks in our interface, a vertical three-dot button will appear instead of the remove button next to the Ticker in the Key Statistics, allowing the user to either remove the ticker from the selection or add/remove the stock in the `Favourite stocks` section.
 * The `Favourite stocks` section will appear on the right side of the `Popular stocks` section on desktop/tablets and underneath on mobile.
-* The `Favourite stocks` section will allow the user to expand the quick access functionalities reducing UX friction and enticing users to come back to our platform.
+* The `Favourite stocks` section will allow users to expand the quick access functionalities, reducing UX friction and enticing users to come back to our platform.
 * If the user removes all the favourite stocks from the `Favourite stocks` section, the section will disappear to remove cognitive load from the customer.
 
 ### Justifications:
 
-* I decided to not add the named selection because I considered it nice to have. If the user can set a favourite stock selection and have quick access to it, that's all the functionality they need to quickly compare multiple stocks on a regular basis.
+* I decided not to add the named selection because I considered it nice to have. If the user can set a favourite stock selection and have quick access to it, that's all the functionality they need to quickly compare multiple stocks on a regular basis.
 
-* If users request more stocks to be added, we can expand the max limit of 3 to 5 or more and if the users request the possibility to save multiple stock selections, it can be considered in the future but before investing time in that feature, I think we can use the `Favourite Stocks` section to see if there is a need for the customer and assess from there.
+* If users request more stocks to be added, we can expand the max limit from 3 to 5 or more. If users request the possibility to save multiple stock selections, it can be considered in the future, but before investing time in that feature, I think we can use the `Favourite Stocks` section to see if there is demand and assess from there.
 
 
         
 # Additional Features:
 
-1) improve the favourite / unfavourite UX by moving it in another location allowing the remove button to be always quickly accessible for stocks not present in the `Popular stocks` section
-2) live updates: allow the user to see the price change over time if not available by default
-3) saving user stocks selections in database
-4) add visual chart either under or above company information for the last selected ticker
+1) Improve the favourite/unfavourite UX by moving it to another location, allowing the remove button to be always quickly accessible for stocks not present in the `Popular stocks` section
+2) Add named selection of tickers to allow more UX flexibility to the user
+3) Live updates: allow users to see the price change over time if not available by default
+4) Add visual charts either under or above company information for the last selected ticker to provide additional context to the user
+5) Save user stock selections to enable more in-depth comparison features
 
 
 
